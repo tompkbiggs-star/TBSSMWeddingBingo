@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seoul Wedding Bingo</title>
+    <style>
+        :root { --gold: #c5a059; --cream: #fdfaf5; --dark: #222; }
+        body { font-family: "Georgia", serif; background: var(--cream); color: var(--dark); margin: 0; padding: 20px; text-align: center; }
+        h1 { font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        #status { font-style: italic; margin-bottom: 20px; min-height: 2.5em; color: #777; font-size: 0.9em; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 350px; margin: 0 auto 30px auto; padding: 10px; }
+        .cell { background: white; border: 1px solid #e0d8c3; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; padding: 8px; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .cell.checked { background: var(--gold); color: white; border-color: var(--gold); }
+        .tile-num { font-weight: bold; font-size: 14px; margin-bottom: 4px; opacity: 0.3; }
+        .cell.checked .tile-num { opacity: 1; }
+        .upload-btn { display: none; background: var(--dark); color: white; text-decoration: none; padding: 20px; border-radius: 50px; font-weight: bold; max-width: 300px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <h1>Wedding Bingo</h1>
+    <div id="status">Tap 3 squares to enter the raffle! 🎁</div>
+    
+    <div class="grid" id="bingo-grid"></div>
+
+    <a id="upload-link" href="#" target="_blank" class="upload-btn">📷 UPLOAD PHOTOS</a>
+
+    <script>
+        var FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSex6EuaUblYlqBR1f8QG8WufzlK5mentLWPl8zBMx41UBVslw/viewform";
+        var ENTRY_ID = "entry.262698099";
+        var prompts = ["The Kiss", "Group Selfie", "The Rings", "Cheers!", "Best Dancer", "Cake Detail", "Selfie w/ Groom", "Selfie w/ Bride", "Just Married"];
+        
+        var selected = [];
+        var grid = document.getElementById('bingo-grid');
+        var btn = document.getElementById('upload-link');
+        var st = document.getElementById('status');
+
+        for (var i = 0; i < prompts.length; i++) {
+            (function(idx) {
+                var label = "#" + (idx + 1);
+                var div = document.createElement('div');
+                div.className = 'cell';
+                div.innerHTML = '<span class="tile-num">' + label + '</span><span>' + prompts[idx] + '</span>';
+                
+                div.onclick = function() {
+                    var foundAt = -1;
+                    for (var k = 0; k < selected.length; k++) {
+                        if (selected[k] === label) { foundAt = k; }
+                    }
+
+                    if (foundAt > -1) {
+                        selected.splice(foundAt, 1);
+                        div.classList.remove('checked');
+                    } else {
+                        if (selected.length < 10) {
+                            selected.push(label);
+                            div.classList.add('checked');
+                        }
+                    }
+                    
+                    var link = FORM_URL + "?usp=pp_url";
+                    for (var j = 0; j < selected.length; j++) {
+                        link += "&" + ENTRY_ID + "=" + encodeURIComponent(selected[j]);
+                    }
+                    btn.href = link;
+                    
+                    if (selected.length > 0) {
+                        btn.style.display = 'block';
+                        btn.innerText = "📷 UPLOAD " + selected.length + " PHOTOS";
+                        if (selected.length >= 3) {
+                            st.innerHTML = '<span style="color:#c5a059;">Ready for the raffle! 🥂</span>';
+                        } else {
+                            st.innerText = "Selected " + selected.length + ". Get " + (3 - selected.length) + " more!";
+                        }
+                    } else {
+                        btn.style.display = 'none';
+                        st.innerText = "Tap 3 squares to enter the raffle!";
+                    }
+                };
+                grid.appendChild(div);
+            })(i);
+        }
+    </script>
+
